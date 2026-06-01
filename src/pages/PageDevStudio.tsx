@@ -1,55 +1,90 @@
 import { type Component, For, createMemo, createSignal } from 'solid-js'
 import readme from '../../DevStudio/README.md?raw'
-import projectBrief from '../../DevStudio/00_Project_Brief.md?raw'
-import architectureNotes from '../../DevStudio/01_Architecture_Notes.md?raw'
 import developmentPlan from '../../DevStudio/02_Development_Plan.md?raw'
 import kanban from '../../DevStudio/03_Kanban.md?raw'
-import referenceIndex from '../../DevStudio/04_Reference_Index.md?raw'
 import doneDefinition from '../../DevStudio/05_Done_Definition.md?raw'
-import questions from '../../DevStudio/06_Questions.md?raw'
 
-type DevStudioDoc = {
+type Task = {
   id: string
   title: string
-  filename: string
-  content: string
+  lane: 'Inbox' | 'Ready' | 'Doing' | 'Review' | 'Done'
+  progress: number
+  note: string
 }
 
-const DOCS: DevStudioDoc[] = [
-  { id: 'readme', title: 'Overview', filename: 'README.md', content: readme },
-  { id: 'brief', title: 'Project Brief', filename: '00_Project_Brief.md', content: projectBrief },
-  { id: 'architecture', title: 'Architecture', filename: '01_Architecture_Notes.md', content: architectureNotes },
-  { id: 'plan', title: 'Development Plan', filename: '02_Development_Plan.md', content: developmentPlan },
-  { id: 'kanban', title: 'Kanban', filename: '03_Kanban.md', content: kanban },
-  { id: 'references', title: 'References', filename: '04_Reference_Index.md', content: referenceIndex },
-  { id: 'done', title: 'DONE Definition', filename: '05_Done_Definition.md', content: doneDefinition },
-  { id: 'questions', title: 'Questions', filename: '06_Questions.md', content: questions },
+const TASKS: Task[] = [
+  { id: 'git', title: 'Git初期化 / push', lane: 'Done', progress: 100, note: 'origin/mainへpush済み' },
+  { id: 'devstudio', title: 'DevStudioをアプリ内表示', lane: 'Review', progress: 80, note: '資料ビューから進捗ボードへ整理中' },
+  { id: 'upnote-state', title: 'UPNOTE state boundary', lane: 'Done', progress: 100, note: 'src/features/upnote/state.ts' },
+  { id: 'upnote-page', title: 'UPNOTE初回ページ', lane: 'Doing', progress: 55, note: 'editor/list/tags/relationを接続' },
+  { id: 'note-repo', title: 'Note repository / persistence', lane: 'Ready', progress: 10, note: 'localStorage or IndexedDB adapter' },
+  { id: 'db-rename', title: 'DB画面のnote用rename', lane: 'Ready', progress: 15, note: 'DB01/02/03/10のラベル整理' },
+  { id: 'pwa-icon', title: 'PWA icon', lane: 'Inbox', progress: 0, note: 'note/card/relationのシルエット案' },
+]
+
+const LANES: Task['lane'][] = ['Inbox', 'Ready', 'Doing', 'Review', 'Done']
+
+const DOCS = [
+  { id: 'plan', title: 'Plan', content: developmentPlan },
+  { id: 'kanban', title: 'Kanban Source', content: kanban },
+  { id: 'done', title: 'DONE', content: doneDefinition },
+  { id: 'readme', title: 'Readme', content: readme },
 ]
 
 const PageDevStudio: Component = () => {
   const [activeDocId, setActiveDocId] = createSignal('plan')
   const activeDoc = createMemo(() => DOCS.find((doc) => doc.id === activeDocId()) ?? DOCS[0])
+  const progress = createMemo(() => Math.round(TASKS.reduce((sum, task) => sum + task.progress, 0) / TASKS.length))
 
   return (
     <div class="h-full bg-nacc-light overflow-hidden flex flex-col">
-      <div class="px-6 pt-4 pb-3 bg-white border-b border-nacc-border shrink-0">
-        <div class="flex items-start justify-between gap-4">
-          <div class="min-w-0">
-            <h1 class="text-xl font-bold text-nacc-dark leading-tight">DevStudio</h1>
-            <p class="text-xs text-gray-500 mt-1">
-              note00-gallerynotedb_vol1.1 の実装計画、Kanban、DONE定義をローカルサーバー内で確認する。
-            </p>
+      <div class="px-6 py-4 bg-white border-b border-nacc-border shrink-0">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h1 class="text-xl font-bold text-nacc-dark">DevStudio</h1>
+            <p class="text-xs text-gray-500 mt-1">進捗率、TODO、Kanbanを先に見るための開発ボード。</p>
           </div>
-          <div class="text-xs text-gray-400 shrink-0 text-right">
-            <div>Source</div>
-            <div class="font-semibold text-nacc-dark">/DevStudio</div>
+          <div class="w-72">
+            <div class="flex justify-between text-xs text-gray-500 mb-1">
+              <span>Total Progress</span>
+              <span class="font-semibold text-nacc-dark">{progress()}%</span>
+            </div>
+            <div class="h-2 rounded-full bg-nacc-light overflow-hidden">
+              <div class="h-full bg-nacc-gold" style={{ width: `${progress()}%` }} />
+            </div>
           </div>
         </div>
       </div>
 
+      <div class="grid grid-cols-5 gap-3 p-4 shrink-0 bg-[#fbfaf8] border-b border-nacc-border overflow-x-auto">
+        <For each={LANES}>
+          {(lane) => (
+            <section class="min-w-44 bg-white border border-nacc-border rounded-xl p-3">
+              <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">{lane}</h2>
+              <div class="flex flex-col gap-2">
+                <For each={TASKS.filter((task) => task.lane === lane)}>
+                  {(task) => (
+                    <article class="border border-nacc-border rounded-lg p-2 bg-[#fffdf9]">
+                      <div class="text-sm font-semibold text-nacc-dark leading-snug">{task.title}</div>
+                      <div class="text-[11px] text-gray-500 mt-1">{task.note}</div>
+                      <div class="flex items-center gap-2 mt-2">
+                        <div class="h-1.5 flex-1 rounded-full bg-nacc-light overflow-hidden">
+                          <div class="h-full bg-nacc-gold" style={{ width: `${task.progress}%` }} />
+                        </div>
+                        <span class="text-[11px] text-gray-400">{task.progress}%</span>
+                      </div>
+                    </article>
+                  )}
+                </For>
+              </div>
+            </section>
+          )}
+        </For>
+      </div>
+
       <div class="flex flex-1 min-h-0 overflow-hidden">
-        <aside class="w-64 shrink-0 bg-white border-r border-nacc-border overflow-y-auto p-3">
-          <div class="text-xs font-semibold text-gray-400 px-2 pb-2">Documents</div>
+        <aside class="w-56 shrink-0 bg-white border-r border-nacc-border overflow-y-auto p-3">
+          <div class="text-xs font-semibold text-gray-400 px-2 pb-2">Docs</div>
           <For each={DOCS}>
             {(doc) => (
               <button
@@ -60,23 +95,16 @@ const PageDevStudio: Component = () => {
                 }}
                 onClick={() => setActiveDocId(doc.id)}
               >
-                <span class="block truncate">{doc.title}</span>
-                <span class="block text-[11px] text-gray-400 truncate mt-0.5">{doc.filename}</span>
+                {doc.title}
               </button>
             )}
           </For>
         </aside>
 
-        <main class="flex-1 min-w-0 overflow-y-auto p-6">
-          <article class="bg-white border border-nacc-border rounded-xl shadow-sm max-w-5xl">
-            <div class="px-5 py-4 border-b border-nacc-border">
-              <div class="text-xs text-gray-400">{activeDoc().filename}</div>
-              <h2 class="text-lg font-bold text-nacc-dark mt-1">{activeDoc().title}</h2>
-            </div>
-            <pre class="whitespace-pre-wrap break-words text-sm leading-7 text-nacc-dark p-5 font-mono">
-              {activeDoc().content}
-            </pre>
-          </article>
+        <main class="flex-1 min-w-0 overflow-y-auto p-5">
+          <pre class="whitespace-pre-wrap break-words text-sm leading-7 text-nacc-dark bg-white border border-nacc-border rounded-xl p-5 font-mono">
+            {activeDoc().content}
+          </pre>
         </main>
       </div>
     </div>

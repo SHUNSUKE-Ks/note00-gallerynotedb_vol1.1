@@ -4,7 +4,10 @@ import type { Page } from '../types'
 
 type NavItem = { page: Page; label: string; icon: string }
 
-const PAGE_NAV: NavItem[] = [{ page: 'memo', label: 'メモ', icon: '📝' }]
+const PAGE_NAV: NavItem[] = [
+  { page: 'upnote', label: 'UPNOTE', icon: 'UN' },
+  { page: 'memo', label: '旧メモ', icon: '📝' },
+]
 const DB_NAV: NavItem[] = [
   { page: 'db01', label: 'DB01 Note DB', icon: '📦' },
   { page: 'db02', label: 'DB02 Tag DB', icon: '🌿' },

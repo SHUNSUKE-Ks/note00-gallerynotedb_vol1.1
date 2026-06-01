@@ -4,6 +4,7 @@ import type { Page } from '../types'
 
 const PAGE_LABELS: Record<Page, string> = {
   memo:     '📝 メモ',
+  upnote:   'UPNOTE',
   db01:     'DB01 Note DB',
   db02:     'DB02 Tag DB',
   db03:     'DB03 Relation',
