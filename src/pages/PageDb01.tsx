@@ -815,10 +815,10 @@ const PageDb01: Component<Props> = (props) => {
       <div class="db-page-header px-6 pt-4 pb-3 bg-nacc-light flex items-start justify-between shrink-0">
         <div class="min-w-0">
           <h1 class="db-page-title text-xl font-bold text-nacc-dark leading-tight">
-            <span class="db-page-title-full">DB01 — </span>商品一覧
+            <span class="db-page-title-full">DB01 — </span>Note DB
           </h1>
           <div class="db-page-subtitle text-xs text-gray-500 mt-0.5">
-            NACCサプリメント全商品データベース ·{' '}
+            Generic note database scaffold ·{' '}
             <span class="font-medium">{props.products.length}件</span>
           </div>
         </div>

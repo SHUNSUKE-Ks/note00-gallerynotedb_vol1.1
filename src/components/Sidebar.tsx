@@ -6,10 +6,10 @@ type NavItem = { page: Page; label: string; icon: string }
 
 const PAGE_NAV: NavItem[] = [{ page: 'memo', label: 'メモ', icon: '📝' }]
 const DB_NAV: NavItem[] = [
-  { page: 'db01', label: 'DB01 商品一覧',   icon: '📦' },
-  { page: 'db02', label: 'DB02 栄養素一覧', icon: '🌿' },
-  { page: 'db03', label: 'DB03 原材料',     icon: '🧪' },
-  { page: 'db10', label: 'DB10 症状/病名',  icon: '🏥' },
+  { page: 'db01', label: 'DB01 Note DB', icon: '📦' },
+  { page: 'db02', label: 'DB02 Tag DB', icon: '🌿' },
+  { page: 'db03', label: 'DB03 Relation', icon: '🧪' },
+  { page: 'db10', label: 'DB10 Status', icon: '🏥' },
 ]
 const NOTEBOOK_NAV: NavItem[] = [
   { page: 'blog',     label: 'ブログ記事',   icon: '📓' },
@@ -92,7 +92,7 @@ const Sidebar: Component = () => (
           <div class="w-5 h-5 rounded-full bg-nacc-gold/20 flex items-center justify-center text-nacc-gold font-bold text-xs">
             N
           </div>
-          <span>NACC管理者</span>
+          <span>note00 user</span>
         </div>
       </div>
     </aside>

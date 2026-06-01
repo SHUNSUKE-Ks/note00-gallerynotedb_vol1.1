@@ -45,65 +45,44 @@ export type AppState = {
 const FONT_SIZE_PX: Record<FontSize, number> = { s: 13, m: 16, l: 19, xl: 22 }
 
 function initDarkMode(): boolean {
-  const saved = localStorage.getItem('nacc-dark-mode')
+  const saved = localStorage.getItem('note00-dark-mode')
   const isDark = saved === 'true'
   if (isDark) document.documentElement.classList.add('dark')
   return isDark
 }
 
 export const DB01_COLUMNS_DEFAULT: ColumnDef[] = [
-  { id: 'name',        label: '品目',        visible: true,  locked: true  },
-  { id: 'category',    label: 'カテゴリ',    visible: true,  locked: false },
-  { id: 'description', label: '商品説明',    visible: true,  locked: false },
-  { id: 'symptoms',    label: '病名/症状',   visible: true,  locked: false },
-  { id: 'effects',     label: '効果',        visible: true,  locked: false },
-  { id: 'ingredients', label: '成分DB',      visible: true,  locked: false },
-  { id: 'image',       label: '商品イメージ', visible: false, locked: false },
-  { id: 'memo',        label: 'メモ欄',      visible: true,  locked: false },
+  { id: 'name',        label: 'Title',       visible: true,  locked: true  },
+  { id: 'category',    label: 'Type',        visible: true,  locked: false },
+  { id: 'description', label: 'Summary',     visible: true,  locked: false },
+  { id: 'symptoms',    label: 'Status',      visible: true,  locked: false },
+  { id: 'effects',     label: 'Actions',     visible: true,  locked: false },
+  { id: 'ingredients', label: 'Relations',   visible: true,  locked: false },
+  { id: 'image',       label: 'Cover',       visible: false, locked: false },
+  { id: 'memo',        label: 'Note',        visible: true,  locked: false },
 ]
 
 export const DB02_COLUMNS_DEFAULT: ColumnDef[] = [
-  { id: 'name',        label: '栄養素',   visible: true,  locked: true  },
-  { id: 'description', label: '説明',     visible: true,  locked: false },
-  { id: 'products',    label: '関連商品', visible: true,  locked: false },
-  { id: 'memo',        label: 'MEMO',     visible: true,  locked: false },
+  { id: 'name',        label: 'Tag',          visible: true,  locked: true  },
+  { id: 'description', label: 'Description',  visible: true,  locked: false },
+  { id: 'products',    label: 'Linked Notes', visible: true,  locked: false },
+  { id: 'memo',        label: 'Memo',         visible: true,  locked: false },
 ]
 
 export const DB03_COLUMNS_DEFAULT: ColumnDef[] = [
-  { id: 'name',     label: '原材料名',   visible: true, locked: true  },
-  { id: 'products', label: '含有商品数', visible: true, locked: false },
-  { id: 'category', label: 'カテゴリ',  visible: true, locked: false },
+  { id: 'name',     label: 'Relation Key', visible: true, locked: true  },
+  { id: 'products', label: 'Linked Count', visible: true, locked: false },
+  { id: 'category', label: 'Type',         visible: true, locked: false },
 ]
 
 export const DB10_COLUMNS_DEFAULT: ColumnDef[] = [
-  { id: 'name',        label: '症状/病名', visible: true, locked: true  },
-  { id: 'description', label: '説明',      visible: true, locked: false },
-  { id: 'products',    label: '関連商品',  visible: true, locked: false },
-  { id: 'memo',        label: 'メモ',      visible: true, locked: false },
+  { id: 'name',        label: 'Status',       visible: true, locked: true  },
+  { id: 'description', label: 'Description',  visible: true, locked: false },
+  { id: 'products',    label: 'Linked Notes', visible: true, locked: false },
+  { id: 'memo',        label: 'Memo',         visible: true, locked: false },
 ]
 
-const INITIAL_BLOGS: Blog[] = [
-  {
-    id: 'sample-blog-1',
-    title: 'CoQ10（コエンザイムQ10）について',
-    body: 'コエンザイムQ10は心臓や筋肉のエネルギー代謝に関わる栄養素です。',
-    coverType: 'none',
-    categoryTags: [],
-    mode: 'memo',
-    createdAt: new Date('2026-05-01'),
-    updatedAt: new Date('2026-05-01'),
-  },
-  {
-    id: 'sample-blog-2',
-    title: 'マルチビタミン — 毎日の健康サポート',
-    body: '',
-    coverType: 'none',
-    categoryTags: [],
-    mode: 'memo',
-    createdAt: new Date('2026-05-15'),
-    updatedAt: new Date('2026-05-15'),
-  },
-]
+const INITIAL_BLOGS: Blog[] = []
 
 const [state, setState] = createStore<AppState>({
   page: 'db01',
@@ -153,7 +132,7 @@ export function setFontSize(size: FontSize) {
 export function toggleDarkMode() {
   const next = !state.darkMode
   document.documentElement.classList.toggle('dark', next)
-  localStorage.setItem('nacc-dark-mode', String(next))
+  localStorage.setItem('note00-dark-mode', String(next))
   setState({ darkMode: next })
 }
 

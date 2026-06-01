@@ -4,10 +4,10 @@ import type { Page } from '../types'
 
 const PAGE_LABELS: Record<Page, string> = {
   memo:     '📝 メモ',
-  db01:     '📦 DB01 商品一覧',
-  db02:     '🌿 DB02 栄養素一覧',
-  db03:     '🧪 DB03 原材料',
-  db10:     '🏥 DB10 症状/病名',
+  db01:     'DB01 Note DB',
+  db02:     'DB02 Tag DB',
+  db03:     'DB03 Relation',
+  db10:     'DB10 Status',
   blog:     '📓 ブログ',
   notebook: '📚 ノートブック',
   trash:    '🗑️ ごみ箱',
@@ -41,7 +41,7 @@ const Header: Component = () => {
           onClick={() => isDbPage() ? setViewMenuOpen((v) => !v) : null}
         >
           <span class="font-bold text-sm tracking-tight">
-            NACC<span class="text-nacc-gold">sup</span>
+            note<span class="text-nacc-gold">00</span>
           </span>
           <Show when={isDbPage()}>
             <svg
