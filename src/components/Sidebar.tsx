@@ -15,6 +15,9 @@ const NOTEBOOK_NAV: NavItem[] = [
   { page: 'blog',     label: 'ブログ記事',   icon: '📓' },
   { page: 'notebook', label: 'ノートブック', icon: '📚' },
 ]
+const DEV_NAV: NavItem[] = [
+  { page: 'devstudio', label: 'DevStudio', icon: 'DS' },
+]
 
 const NavBtn: Component<{ item: NavItem }> = (props) => (
   <button
@@ -64,6 +67,9 @@ const Sidebar: Component = () => (
 
         <SectionLabel label="ノートブック" />
         <For each={NOTEBOOK_NAV}>{(item) => <NavBtn item={item} />}</For>
+
+        <SectionLabel label="開発" />
+        <For each={DEV_NAV}>{(item) => <NavBtn item={item} />}</For>
       </nav>
 
       {/* Trash */}

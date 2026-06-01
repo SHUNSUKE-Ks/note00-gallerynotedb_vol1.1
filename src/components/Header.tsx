@@ -12,6 +12,7 @@ const PAGE_LABELS: Record<Page, string> = {
   notebook: '📚 ノートブック',
   trash:    '🗑️ ごみ箱',
   gallery:  '🖼 ギャラリー',
+  devstudio: 'DevStudio',
 }
 
 const Header: Component = () => {
@@ -19,6 +20,10 @@ const Header: Component = () => {
   const isDbPage = () => state.page === 'db01' || state.page === 'db02' || state.page === 'db03' || state.page === 'db10'
 
   function closeViewMenu() { setViewMenuOpen(false) }
+  function goToDevStudio() {
+    navigate('devstudio')
+    closeViewMenu()
+  }
 
   return (
     <header class="h-12 bg-white border-b border-nacc-border flex items-center px-3 gap-2 shrink-0 z-50 relative">
@@ -38,34 +43,53 @@ const Header: Component = () => {
       <div class="relative">
         <button
           class="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-          onClick={() => isDbPage() ? setViewMenuOpen((v) => !v) : null}
+          onClick={() => setViewMenuOpen((v) => !v)}
         >
           <span class="font-bold text-sm tracking-tight">
             note<span class="text-nacc-gold">00</span>
           </span>
-          <Show when={isDbPage()}>
-            <svg
-              class="w-3 h-3 text-gray-400 transition-transform"
-              classList={{ 'rotate-180': viewMenuOpen() }}
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </Show>
+          <svg
+            class="w-3 h-3 text-gray-400 transition-transform"
+            classList={{ 'rotate-180': viewMenuOpen() }}
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
         </button>
 
-        <Show when={viewMenuOpen() && isDbPage()}>
+        <Show when={viewMenuOpen()}>
           <div
-            class="absolute left-0 top-10 bg-white border border-nacc-border rounded-xl shadow-lg w-52 overflow-hidden z-50"
-            onClick={closeViewMenu}
+            class="absolute left-0 top-10 bg-white border border-nacc-border rounded-xl shadow-lg w-60 overflow-hidden z-50"
           >
             <div class="px-3 py-2 text-xs text-gray-400 font-medium border-b border-nacc-border">
-              表示形式を選択
+              note00 Menu
             </div>
             <div class="p-1.5 flex flex-col gap-0.5">
               <button
                 class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 text-left w-full transition-colors"
-                onClick={() => setState({ dbView: 'table' })}
+                onClick={goToDevStudio}
+              >
+                <span>DS</span>
+                <div>
+                  <div class="font-medium">DevStudio</div>
+                  <div class="text-xs text-gray-400">実装計画とKanbanを見る</div>
+                </div>
+                <Show when={state.page === 'devstudio'}>
+                  <span class="ml-auto text-nacc-gold text-xs">✓</span>
+                </Show>
+              </button>
+
+              <Show when={isDbPage()}>
+                <div class="border-t border-nacc-border my-1" />
+                <div class="px-3 pt-1 pb-0.5 text-[11px] text-gray-400 font-semibold">
+                  DB View
+                </div>
+              </Show>
+
+              <Show when={isDbPage()}>
+              <button
+                class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 text-left w-full transition-colors"
+                onClick={() => { setState({ dbView: 'table' }); closeViewMenu() }}
               >
                 <span>≡</span>
                 <div>
@@ -76,9 +100,11 @@ const Header: Component = () => {
                   <span class="ml-auto text-nacc-gold text-xs">✓</span>
                 </Show>
               </button>
+              </Show>
+              <Show when={isDbPage()}>
               <button
                 class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm hover:bg-gray-50 text-left w-full transition-colors"
-                onClick={() => setState({ dbView: 'detail' })}
+                onClick={() => { setState({ dbView: 'detail' }); closeViewMenu() }}
               >
                 <span>🗂</span>
                 <div>
@@ -89,6 +115,7 @@ const Header: Component = () => {
                   <span class="ml-auto text-nacc-gold text-xs">✓</span>
                 </Show>
               </button>
+              </Show>
             </div>
           </div>
           <div class="fixed inset-0 z-40" onClick={closeViewMenu} />

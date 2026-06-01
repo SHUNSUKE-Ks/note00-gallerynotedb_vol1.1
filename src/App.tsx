@@ -10,6 +10,7 @@ import PageBlog from './pages/PageBlog'
 import PageMemo from './pages/PageMemo'
 import PageTrash from './pages/PageTrash'
 import PageNotebook from './pages/PageNotebook'
+import PageDevStudio from './pages/PageDevStudio'
 import SettingsPanel from './components/SettingsPanel'
 import GalleryPanel from './components/GalleryPanel'
 import GalleryPage from './pages/gallery'
@@ -59,6 +60,9 @@ const MainApp: Component = () => (
         </Show>
         <Show when={state.page === 'notebook'}>
           <PageNotebook />
+        </Show>
+        <Show when={state.page === 'devstudio'}>
+          <PageDevStudio />
         </Show>
       </main>
       <SettingsPanel />
