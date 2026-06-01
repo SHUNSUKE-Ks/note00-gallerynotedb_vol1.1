@@ -1,5 +1,6 @@
 import { type Component, Show, onMount } from 'solid-js'
 import { state, setState, setFontSize, initFirestore } from './store'
+import { firebaseEnabled } from './db/firebase'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import PageDb01 from './pages/PageDb01'
@@ -19,7 +20,9 @@ import GalleryPage from './pages/gallery'
 setFontSize(state.fontSize)
 
 const App: Component = () => {
-  onMount(() => { initFirestore() })
+  onMount(() => {
+    if (firebaseEnabled) initFirestore()
+  })
   return (
     <Show when={state.page === 'gallery'} fallback={<MainApp />}>
       <GalleryPage />

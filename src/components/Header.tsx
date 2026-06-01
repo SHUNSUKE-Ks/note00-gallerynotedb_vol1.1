@@ -1,6 +1,7 @@
 import { type Component, Show, createSignal } from 'solid-js'
 import { state, setState, navigate } from '../store'
 import type { Page } from '../types'
+import { exportLocalWorkspace } from '../dataBridge/localExport'
 
 const PAGE_LABELS: Record<Page, string> = {
   memo:     '📝 メモ',
@@ -175,6 +176,21 @@ const Header: Component = () => {
           </svg>
           <input type="text" placeholder="検索..." class="bg-transparent outline-none w-full text-gray-600 text-xs" />
         </div>
+
+        <button
+          class="hidden sm:inline-flex px-2 py-1.5 rounded-lg hover:bg-gray-100 active:bg-gray-200 text-xs font-semibold text-gray-500 transition-all"
+          onClick={() => exportLocalWorkspace('json')}
+          title="Local JSON Export"
+        >
+          JSON
+        </button>
+        <button
+          class="hidden sm:inline-flex px-2 py-1.5 rounded-lg hover:bg-gray-100 active:bg-gray-200 text-xs font-semibold text-gray-500 transition-all"
+          onClick={() => exportLocalWorkspace('md')}
+          title="Local MD Export"
+        >
+          MD
+        </button>
 
         <button
           class="p-1.5 rounded-lg hover:bg-gray-100 active:bg-gray-200 active:scale-95 text-gray-500 transition-all"

@@ -1,8 +1,8 @@
 export type GalleryCategory = 'product' | 'nutrient' | 'reference' | 'other'
 
 export const CATEGORY_LABELS: Record<GalleryCategory, string> = {
-  product:   '商品',
-  nutrient:  '栄養素',
+  product:   'Note',
+  nutrient:  'Tag',
   reference: '参考資料',
   other:     'その他',
 }

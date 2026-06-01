@@ -269,7 +269,7 @@ const PageMemo: Component = () => {
                 }}
                 onClick={() => setTagPickerTab(tab)}
               >
-                {tab === 'product' ? '📦 商品' : '🌿 成分'}
+                {tab === 'product' ? 'Note' : 'Tag'}
               </button>
             ))}
           </div>

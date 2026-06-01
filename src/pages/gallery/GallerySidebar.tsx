@@ -5,8 +5,8 @@ import { CATEGORY_ICON } from './types'
 
 const CATEGORIES: Array<{ value: GalleryCategory | 'all'; label: string; icon: string }> = [
   { value: 'all',       label: 'すべて',   icon: '✨' },
-  { value: 'product',   label: '商品',     icon: CATEGORY_ICON['product'] },
-  { value: 'nutrient',  label: '栄養素',   icon: CATEGORY_ICON['nutrient'] },
+  { value: 'product',   label: 'Note',     icon: CATEGORY_ICON['product'] },
+  { value: 'nutrient',  label: 'Tag',      icon: CATEGORY_ICON['nutrient'] },
   { value: 'reference', label: '参考資料', icon: CATEGORY_ICON['reference'] },
   { value: 'other',     label: 'その他',   icon: CATEGORY_ICON['other'] },
 ]

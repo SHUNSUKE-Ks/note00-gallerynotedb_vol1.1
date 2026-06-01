@@ -49,6 +49,44 @@ export function addMasterTag(tag: string) {
   )
 }
 
+function readImageSize(dataUrl: string): Promise<{ width?: number; height?: number }> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight })
+    img.onerror = () => resolve({})
+    img.src = dataUrl
+  })
+}
+
+export function addGalleryImage(file: File) {
+  if (!file.type.startsWith('image/')) return
+  const reader = new FileReader()
+  reader.onload = async () => {
+    const dataUrl = String(reader.result ?? '')
+    if (!dataUrl) return
+    const now = new Date()
+    const size = await readImageSize(dataUrl)
+    const item: GalleryItem = {
+      id: `gallery_${now.getTime()}`,
+      filename: file.name,
+      label: file.name.replace(/\.[^.]+$/, ''),
+      description: '',
+      tags: [],
+      category: 'reference',
+      mimeType: file.type,
+      fileSize: file.size,
+      ...size,
+      dataUrl,
+      isFavorite: false,
+      createdAt: now,
+      updatedAt: now,
+    }
+    setGalleryState('items', (prev) => [item, ...prev])
+    setGalleryState({ selectedId: item.id, detailOpen: true, showTrash: false })
+  }
+  reader.readAsDataURL(file)
+}
+
 export function selectGalleryItem(id: string | null) {
   setGalleryState({ selectedId: id, detailOpen: id !== null })
 }

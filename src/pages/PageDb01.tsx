@@ -1,11 +1,11 @@
 import { type Component, createMemo, createSignal, For, Show } from 'solid-js'
 import type { Product } from '../types'
 import { productImageUrl } from '../db/products'
-import { state, setState, updateProduct, navigate } from '../store'
+import { state, setState, updateProduct, navigate, addProduct, updateDbTitle } from '../store'
 
 type Props = { products: Product[] }
 type EditCell = { rowId: string; col: string; x: number; y: number }
-type CategoryFilter = 'all' | 'supplement' | 'cosmetic'
+type CategoryFilter = 'all' | string
 
 // ── Tags Popover (symptoms / effects) ──────────────────────────────────────
 const TagsPopover: Component<{
@@ -158,7 +158,7 @@ const MemoPanelOverlay: Component<{
             <p class="text-xs text-nacc-gold mt-0.5 truncate font-medium">{props.product!.name}</p>
           </Show>
           <Show when={!props.product}>
-            <p class="text-xs text-gray-400 mt-0.5">商品をクリックして選択</p>
+            <p class="text-xs text-gray-400 mt-0.5">項目をクリックして選択</p>
           </Show>
         </div>
         <button
@@ -215,6 +215,12 @@ const MemoPanelOverlay: Component<{
     </div>
   )
 }
+
+const TypeBadge: Component<{ type: string }> = (props) => (
+  <span class="text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200 rounded-full px-2.5 py-0.5">
+    {props.type || 'note'}
+  </span>
+)
 
 // ── Table View with inline editing ─────────────────────────────────────────
 const TableView: Component<{
@@ -325,18 +331,12 @@ const TableView: Component<{
                       case 'category':
                         return (
                           <div class="notion-cell flex-1 px-3 py-2.5 flex items-center" onClick={(e) => e.stopPropagation()}>
-                            <Show
-                              when={product.category === 'supplement'}
-                              fallback={
-                                <span class="text-xs font-medium bg-pink-50 text-pink-600 border border-pink-100 rounded-full px-2.5 py-0.5">
-                                  🌸 コスメ
-                                </span>
-                              }
-                            >
-                              <span class="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2.5 py-0.5">
-                                💊 サプリ
-                              </span>
-                            </Show>
+                            <input
+                              type="text"
+                              class="w-full max-w-36 text-xs font-medium bg-slate-50 text-slate-700 border border-slate-200 rounded-full px-2.5 py-1 outline-none focus:border-nacc-gold"
+                              value={product.category}
+                              onInput={(e) => props.onUpdate(product.id, { category: e.currentTarget.value.trim() || 'note' })}
+                            />
                           </div>
                         )
 
@@ -478,7 +478,10 @@ const TableView: Component<{
             )}
           </For>
 
-          <div class="flex items-center gap-2 px-4 py-2 text-xs text-gray-400 hover:bg-gray-50 cursor-pointer transition-colors border-t border-dashed border-nacc-border">
+          <div
+            class="flex items-center gap-2 px-4 py-2 text-xs text-gray-400 hover:bg-gray-50 cursor-pointer transition-colors border-t border-dashed border-nacc-border"
+            onClick={() => addProduct()}
+          >
             <span>+</span> 新しい行を追加
           </div>
         </div>
@@ -548,7 +551,7 @@ const DetailView: Component<{ products: Product[] }> = (props) => {
         <div class="p-3 border-b border-nacc-border">
           <input
             type="search"
-            placeholder="商品を検索..."
+            placeholder="項目を検索..."
             class="w-full px-3 py-1.5 text-xs rounded-lg border border-nacc-border bg-white outline-none focus:border-nacc-gold"
             value={search()}
             onInput={(e) => setSearch(e.currentTarget.value)}
@@ -566,7 +569,7 @@ const DetailView: Component<{ products: Product[] }> = (props) => {
                 onClick={() => setSelected(product)}
               >
                 <div class="w-9 h-9 rounded-lg overflow-hidden bg-[#e8dfd0] shrink-0 flex items-center justify-center text-base">
-                  <Show when={product.image} fallback={<span>{product.category === 'cosmetic' ? '🌸' : '💊'}</span>}>
+                  <Show when={product.image} fallback={<span>📝</span>}>
                     <img
                       src={productImageUrl(product.image)}
                       alt={product.name}
@@ -592,7 +595,7 @@ const DetailView: Component<{ products: Product[] }> = (props) => {
           fallback={
             <div class="flex flex-col items-center justify-center h-full text-[#ccc] gap-2">
               <span class="text-5xl">💊</span>
-              <span class="text-sm">商品を選択してください</span>
+              <span class="text-sm">ノート項目を選択してください</span>
             </div>
           }
         >
@@ -612,24 +615,13 @@ const DetailView: Component<{ products: Product[] }> = (props) => {
                 <div>
                   <h1 class="text-xl font-bold text-nacc-dark mb-0.5">{product().name}</h1>
                   <p class="text-xs text-[#999] mb-2">{product().id}</p>
-                  <Show
-                    when={product().category === 'supplement'}
-                    fallback={
-                      <span class="text-xs font-medium bg-pink-50 text-pink-600 border border-pink-100 rounded-full px-2.5 py-1">
-                        🌸 コスメ
-                      </span>
-                    }
-                  >
-                    <span class="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2.5 py-1">
-                      💊 サプリ
-                    </span>
-                  </Show>
+                  <TypeBadge type={product().category} />
                 </div>
               </div>
 
               <Show when={product().description}>
                 <div class="mb-5 bg-white rounded-xl border border-nacc-border p-4">
-                  <h2 class="text-xs font-semibold text-[#999] uppercase tracking-wider mb-2">商品説明</h2>
+                  <h2 class="text-xs font-semibold text-[#999] uppercase tracking-wider mb-2">概要</h2>
                   <p class="text-sm text-nacc-dark leading-relaxed">{product().description}</p>
                 </div>
               </Show>
@@ -700,7 +692,7 @@ const DetailView: Component<{ products: Product[] }> = (props) => {
   )
 }
 
-// ── Index View (2-column: 品目 | 商品説明) ────────────────────────────────
+// ── Index View (2-column: title | summary) ────────────────────────────────
 const IndexView: Component<{ products: Product[] }> = (props) => (
   <div class="flex-1 overflow-auto px-1 md:px-6 pb-6">
     <div class="bg-white rounded-xl border border-nacc-border overflow-hidden">
@@ -710,7 +702,7 @@ const IndexView: Component<{ products: Product[] }> = (props) => (
           品目
         </div>
         <div class="flex-1 px-3 md:px-5 py-2 md:py-3 text-[11px] md:text-xs font-bold text-gray-500 tracking-wider uppercase">
-          商品説明
+          Summary
         </div>
       </div>
 
@@ -724,21 +716,10 @@ const IndexView: Component<{ products: Product[] }> = (props) => (
             {/* 品目 — ID (S01 etc.) は非表示 */}
             <div class="w-[40%] md:w-72 shrink-0 px-2 py-3 md:px-5 md:py-5 border-r border-nacc-border flex flex-col gap-1.5 md:gap-2 justify-start">
               <p class="font-bold text-nacc-gold text-[12px] md:text-sm leading-snug">{product.name}</p>
-              <Show
-                when={product.category === 'supplement'}
-                fallback={
-                  <span class="text-[10px] md:text-xs font-medium bg-pink-50 text-pink-600 border border-pink-100 rounded-full px-1.5 md:px-2.5 py-0.5 self-start leading-tight">
-                    🌸 コスメ
-                  </span>
-                }
-              >
-                <span class="text-[10px] md:text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-1.5 md:px-2.5 py-0.5 self-start leading-tight">
-                  💊 サプリ
-                </span>
-              </Show>
+              <TypeBadge type={product.category} />
             </div>
 
-            {/* 商品説明 */}
+            {/* Summary */}
             <div class="flex-1 px-2 py-3 md:px-6 md:py-5 flex items-start min-w-0">
               <p class="text-[12px] md:text-sm text-nacc-dark leading-relaxed">
                 {product.description || (
@@ -751,7 +732,7 @@ const IndexView: Component<{ products: Product[] }> = (props) => (
       </For>
 
       <Show when={props.products.length === 0}>
-        <div class="px-6 py-12 text-center text-xs text-gray-300">該当商品なし</div>
+        <div class="px-6 py-12 text-center text-xs text-gray-300">該当項目なし</div>
       </Show>
     </div>
   </div>
@@ -786,18 +767,24 @@ const TagList: Component<{ items: string[]; color: keyof typeof COLOR_MAP }> = (
 // ── Page Root ──────────────────────────────────────────────────────────────
 const PageDb01: Component<Props> = (props) => {
   const [categoryFilter, setCategoryFilter] = createSignal<CategoryFilter>('all')
+  const [newType, setNewType] = createSignal('note')
   const [memoPanelOpen, setMemoPanelOpen] = createSignal(false)
   const [memoPanelProduct, setMemoPanelProduct] = createSignal<Product | null>(null)
+
+  const typeCounts = createMemo(() => {
+    const map = new Map<string, number>()
+    props.products.forEach((product) => {
+      const type = product.category?.trim() || 'note'
+      map.set(type, (map.get(type) ?? 0) + 1)
+    })
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b, 'ja'))
+  })
 
   const filteredProducts = createMemo(() => {
     const f = categoryFilter()
     if (f === 'all') return props.products
-    const cat = f === 'supplement' ? 'supplement' : 'cosmetic'
-    return props.products.filter((p) => p.category === cat)
+    return props.products.filter((p) => (p.category?.trim() || 'note') === f)
   })
-
-  const supplementCount = () => props.products.filter((p) => p.category === 'supplement').length
-  const cosmeticCount  = () => props.products.filter((p) => p.category === 'cosmetic').length
 
   function handleRowSelect(product: Product) {
     setMemoPanelProduct(product)
@@ -815,7 +802,12 @@ const PageDb01: Component<Props> = (props) => {
       <div class="db-page-header px-6 pt-4 pb-3 bg-nacc-light flex items-start justify-between shrink-0">
         <div class="min-w-0">
           <h1 class="db-page-title text-xl font-bold text-nacc-dark leading-tight">
-            <span class="db-page-title-full">DB01 — </span>Note DB
+            <span class="db-page-title-full">DB01 — </span>
+            <input
+              class="bg-transparent border-b border-transparent hover:border-nacc-border focus:border-nacc-gold outline-none max-w-64"
+              value={state.dbTitles.db01}
+              onInput={(e) => updateDbTitle('db01', e.currentTarget.value)}
+            />
           </h1>
           <div class="db-page-subtitle text-xs text-gray-500 mt-0.5">
             Generic note database scaffold ·{' '}
@@ -839,7 +831,20 @@ const PageDb01: Component<Props> = (props) => {
           >
             ⚙<span class="db-hdr-btn-label ml-1">カラム設定</span>
           </button>
-          <button class="db-hdr-btn flex items-center gap-1.5 px-3 py-1.5 text-xs bg-nacc-dark text-white rounded-lg hover:opacity-90 transition-opacity">
+          <input
+            type="text"
+            class="hidden md:block w-24 text-xs border border-nacc-border rounded-lg px-2 py-1.5 outline-none focus:border-nacc-gold"
+            value={newType()}
+            onInput={(e) => setNewType(e.currentTarget.value)}
+            placeholder="type"
+          />
+          <button
+            class="db-hdr-btn flex items-center gap-1.5 px-3 py-1.5 text-xs bg-nacc-dark text-white rounded-lg hover:opacity-90 transition-opacity"
+            onClick={() => {
+              addProduct(newType())
+              setCategoryFilter('all')
+            }}
+          >
             +<span class="db-hdr-btn-label ml-1">新規追加</span>
           </button>
         </div>
@@ -857,26 +862,20 @@ const PageDb01: Component<Props> = (props) => {
         >
           全て <span class="opacity-70">({props.products.length})</span>
         </button>
-        <button
-          class="flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full border transition-colors whitespace-nowrap"
-          classList={{
-            'bg-amber-500 text-white border-amber-500': categoryFilter() === 'supplement',
-            'bg-white text-amber-700 border-amber-200 hover:border-amber-400': categoryFilter() !== 'supplement',
-          }}
-          onClick={() => setCategoryFilter('supplement')}
-        >
-          💊 サプリ <span class="opacity-70">({supplementCount()})</span>
-        </button>
-        <button
-          class="flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full border transition-colors whitespace-nowrap"
-          classList={{
-            'bg-pink-500 text-white border-pink-500': categoryFilter() === 'cosmetic',
-            'bg-white text-pink-600 border-pink-200 hover:border-pink-400': categoryFilter() !== 'cosmetic',
-          }}
-          onClick={() => setCategoryFilter('cosmetic')}
-        >
-          🌸 コスメ <span class="opacity-70">({cosmeticCount()})</span>
-        </button>
+        <For each={typeCounts()}>
+          {([type, count]) => (
+            <button
+              class="flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full border transition-colors whitespace-nowrap"
+              classList={{
+                'bg-nacc-gold text-white border-nacc-gold': categoryFilter() === type,
+                'bg-white text-slate-600 border-slate-200 hover:border-nacc-gold': categoryFilter() !== type,
+              }}
+              onClick={() => setCategoryFilter(type)}
+            >
+              {type} <span class="opacity-70">({count})</span>
+            </button>
+          )}
+        </For>
       </div>
 
       {/* View tabs */}

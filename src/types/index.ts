@@ -4,7 +4,7 @@ export type Product = {
   id: string
   name: string
   image: string
-  category: 'supplement' | 'cosmetic'
+  category: string
   description: string
   price: number
   volume: string

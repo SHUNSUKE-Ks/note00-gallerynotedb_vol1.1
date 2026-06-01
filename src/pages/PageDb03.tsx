@@ -3,7 +3,7 @@ import { state, setState } from '../store'
 
 type IngredientRow = {
   name: string
-  products: { id: string; name: string; category: 'supplement' | 'cosmetic' }[]
+  products: { id: string; name: string; category: string }[]
 }
 
 const PageDb03: Component = () => {
@@ -11,7 +11,7 @@ const PageDb03: Component = () => {
   const [selectedName, setSelectedName] = createSignal<string | null>(null)
 
   const ingredientRows = createMemo<IngredientRow[]>(() => {
-    const map = new Map<string, { id: string; name: string; category: 'supplement' | 'cosmetic' }[]>()
+    const map = new Map<string, { id: string; name: string; category: string }[]>()
     for (const product of state.products) {
       for (const ing of product.ingredients) {
         const trimmed = ing.trim()
@@ -42,9 +42,9 @@ const PageDb03: Component = () => {
       {/* Page header */}
       <div class="px-6 pt-4 pb-3 bg-nacc-light flex items-start justify-between shrink-0">
         <div>
-          <h1 class="text-xl font-bold text-nacc-dark">DB03 — 原材料一覧</h1>
+          <h1 class="text-xl font-bold text-nacc-dark">DB03 — Relation</h1>
           <div class="text-xs text-gray-500 mt-0.5">
-            商品に含まれる原材料データベース ·{' '}
+            Note同士のRelation Keyデータベース ·{' '}
             <span class="font-medium">{ingredientRows().length}種類</span>
           </div>
         </div>
@@ -62,7 +62,7 @@ const PageDb03: Component = () => {
       <div class="px-6 py-2.5 border-b border-nacc-border bg-white shrink-0">
         <input
           type="search"
-          placeholder="原材料名を検索..."
+          placeholder="Relation Keyを検索..."
           class="w-full max-w-sm px-3 py-1.5 text-xs rounded-lg border border-nacc-border bg-nacc-light outline-none focus:border-nacc-gold"
           value={search()}
           onInput={(e) => setSearch(e.currentTarget.value)}
@@ -89,8 +89,13 @@ const PageDb03: Component = () => {
             {/* Rows */}
             <For each={filtered()}>
               {(row) => {
-                const supCount = () => row.products.filter((p) => p.category === 'supplement').length
-                const cosCount = () => row.products.filter((p) => p.category === 'cosmetic').length
+                const typeCounts = () => Array.from(
+                  row.products.reduce((map, product) => {
+                    const type = product.category || 'note'
+                    map.set(type, (map.get(type) ?? 0) + 1)
+                    return map
+                  }, new Map<string, number>())
+                )
 
                 return (
                   <div
@@ -120,16 +125,13 @@ const PageDb03: Component = () => {
                           case 'category':
                             return (
                               <div class="notion-cell flex-1 px-3 py-2.5 flex items-center gap-1.5">
-                                <Show when={supCount() > 0}>
-                                  <span class="text-xs bg-amber-50 text-amber-700 border border-amber-100 rounded-full px-2 py-0.5">
-                                    💊 {supCount()}
-                                  </span>
-                                </Show>
-                                <Show when={cosCount() > 0}>
-                                  <span class="text-xs bg-pink-50 text-pink-600 border border-pink-100 rounded-full px-2 py-0.5">
-                                    🌸 {cosCount()}
-                                  </span>
-                                </Show>
+                                <For each={typeCounts()}>
+                                  {([type, count]) => (
+                                    <span class="text-xs bg-slate-50 text-slate-700 border border-slate-200 rounded-full px-2 py-0.5">
+                                      {type} {count}
+                                    </span>
+                                  )}
+                                </For>
                               </div>
                             )
                           default:
@@ -145,7 +147,7 @@ const PageDb03: Component = () => {
 
             <Show when={filtered().length === 0}>
               <div class="px-6 py-10 text-center text-xs text-gray-300">
-                一致する原材料が見つかりません
+                一致するRelation Keyが見つかりません
               </div>
             </Show>
           </div>
@@ -157,7 +159,7 @@ const PageDb03: Component = () => {
             <div class="w-72 shrink-0 border-l border-nacc-border bg-nacc-light overflow-y-auto flex flex-col">
               <div class="flex items-center justify-between px-4 py-3 border-b border-nacc-border bg-white shrink-0">
                 <div class="min-w-0 flex-1">
-                  <p class="text-xs text-gray-400 mb-0.5">原材料</p>
+                  <p class="text-xs text-gray-400 mb-0.5">Relation Key</p>
                   <h2 class="text-sm font-bold text-nacc-dark truncate">{row().name}</h2>
                 </div>
                 <button
@@ -170,50 +172,24 @@ const PageDb03: Component = () => {
 
               <div class="p-4 flex-1">
                 <p class="text-xs text-gray-500 mb-3 font-medium">
-                  {row().products.length}件の商品に含まれています
+                  {row().products.length}件のNoteにリンクされています
                 </p>
 
-                {/* Supplement products */}
-                <Show when={row().products.some((p) => p.category === 'supplement')}>
-                  <div class="mb-3">
-                    <p class="text-xs font-semibold text-amber-700 mb-1.5 flex items-center gap-1">
-                      💊 サプリメント
-                    </p>
-                    <div class="flex flex-col gap-1.5">
-                      <For each={row().products.filter((p) => p.category === 'supplement')}>
-                        {(p) => (
-                          <div class="flex items-center gap-2 bg-white rounded-lg border border-nacc-border px-3 py-2">
-                            <span class="text-xs text-nacc-dark font-medium leading-tight flex-1 min-w-0 truncate">
-                              {p.name}
-                            </span>
-                            <span class="text-xs text-gray-400 shrink-0">{p.id}</span>
-                          </div>
-                        )}
-                      </For>
-                    </div>
-                  </div>
-                </Show>
-
-                {/* Cosmetic products */}
-                <Show when={row().products.some((p) => p.category === 'cosmetic')}>
-                  <div>
-                    <p class="text-xs font-semibold text-pink-600 mb-1.5 flex items-center gap-1">
-                      🌸 コスメ
-                    </p>
-                    <div class="flex flex-col gap-1.5">
-                      <For each={row().products.filter((p) => p.category === 'cosmetic')}>
-                        {(p) => (
-                          <div class="flex items-center gap-2 bg-white rounded-lg border border-nacc-border px-3 py-2">
-                            <span class="text-xs text-nacc-dark font-medium leading-tight flex-1 min-w-0 truncate">
-                              {p.name}
-                            </span>
-                            <span class="text-xs text-gray-400 shrink-0">{p.id}</span>
-                          </div>
-                        )}
-                      </For>
-                    </div>
-                  </div>
-                </Show>
+                <div class="flex flex-col gap-1.5">
+                  <For each={row().products}>
+                    {(p) => (
+                      <div class="flex items-center gap-2 bg-white rounded-lg border border-nacc-border px-3 py-2">
+                        <span class="text-xs text-nacc-dark font-medium leading-tight flex-1 min-w-0 truncate">
+                          {p.name}
+                        </span>
+                        <span class="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5">
+                          {p.category || 'note'}
+                        </span>
+                        <span class="text-xs text-gray-400 shrink-0">{p.id}</span>
+                      </div>
+                    )}
+                  </For>
+                </div>
               </div>
             </div>
           )}

@@ -1,9 +1,10 @@
 import { type Component, createMemo } from 'solid-js'
-import { galleryState, setGalleryState, getFilteredItems } from './store'
+import { galleryState, setGalleryState, getFilteredItems, addGalleryImage } from './store'
 
 const GalleryHeader: Component<{ onBack: () => void }> = (props) => {
   const count = createMemo(() => getFilteredItems(galleryState).length)
   const total = () => galleryState.items.length
+  let fileInput!: HTMLInputElement
 
   return (
     <header class="h-14 bg-white border-b border-gray-100 flex items-center px-4 gap-3 shrink-0">
@@ -97,7 +98,21 @@ const GalleryHeader: Component<{ onBack: () => void }> = (props) => {
         </div>
 
         {/* Add button */}
-        <button class="flex items-center gap-1.5 px-3.5 py-2 bg-linear-to-r from-violet-500 to-pink-500 text-white text-xs font-bold rounded-full hover:opacity-90 active:scale-95 transition-all shadow-sm shadow-violet-200">
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          class="hidden"
+          onChange={(e) => {
+            const file = e.currentTarget.files?.[0]
+            if (file) addGalleryImage(file)
+            e.currentTarget.value = ''
+          }}
+        />
+        <button
+          class="flex items-center gap-1.5 px-3.5 py-2 bg-linear-to-r from-violet-500 to-pink-500 text-white text-xs font-bold rounded-full hover:opacity-90 active:scale-95 transition-all shadow-sm shadow-violet-200"
+          onClick={() => fileInput.click()}
+        >
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" />
           </svg>

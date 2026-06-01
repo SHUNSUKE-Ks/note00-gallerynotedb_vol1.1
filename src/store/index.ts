@@ -9,9 +9,11 @@ import {
   fetchNotebooks, addNotebookFs, updateNotebookFs, deleteNotebookFs,
   fetchProducts, updateProductFs, seedProductsFs,
   fetchNutrients, updateNutrientFs, seedNutrientsFs,
+  firebaseEnabled,
 } from '../db/firebase'
 
 export type DbStatus = 'idle' | 'connecting' | 'connected' | 'error'
+export type DbTitleKey = 'db01' | 'db02'
 
 export type AppState = {
   page: Page
@@ -39,6 +41,7 @@ export type AppState = {
   db02Columns: ColumnDef[]
   db03Columns: ColumnDef[]
   db10Columns: ColumnDef[]
+  dbTitles: Record<DbTitleKey, string>
   dbStatus: DbStatus
 }
 
@@ -49,6 +52,10 @@ function initDarkMode(): boolean {
   const isDark = saved === 'true'
   if (isDark) document.documentElement.classList.add('dark')
   return isDark
+}
+
+function initSidebarOpen(): boolean {
+  return typeof window !== 'undefined' ? window.innerWidth >= 768 && window.innerHeight > 500 : true
 }
 
 export const DB01_COLUMNS_DEFAULT: ColumnDef[] = [
@@ -95,7 +102,7 @@ const [state, setState] = createStore<AppState>({
   selectedNutrientId: null,
   selectedBlogId: null,
   selectedMemoId: null,
-  sidebarOpen: false,
+  sidebarOpen: initSidebarOpen(),
   settingsPanelOpen: false,
   galleryPanelOpen: false,
   blogFilterTags: [],
@@ -110,6 +117,10 @@ const [state, setState] = createStore<AppState>({
   db02Columns: DB02_COLUMNS_DEFAULT,
   db03Columns: DB03_COLUMNS_DEFAULT,
   db10Columns: DB10_COLUMNS_DEFAULT,
+  dbTitles: {
+    db01: 'Note DB',
+    db02: 'Tag DB',
+  },
   dbStatus: 'idle',
 })
 
@@ -121,7 +132,12 @@ export function navigate(page: Page) {
   if (page === 'gallery' && state.page !== 'gallery') {
     setState({ galleryReturnPage: state.page })
   }
-  setState({ page, sidebarOpen: false })
+  const keepSidebar = typeof window !== 'undefined' && window.innerWidth >= 768 && window.innerHeight > 500
+  setState({ page, sidebarOpen: keepSidebar ? state.sidebarOpen : false })
+}
+
+export function updateDbTitle(key: DbTitleKey, title: string) {
+  setState('dbTitles', key, title)
 }
 
 export function setFontSize(size: FontSize) {
@@ -205,12 +221,49 @@ export async function initFirestore(): Promise<void> {
 
 export function updateProduct(id: string, patch: Partial<Product>): void {
   setState('products', (prev) => prev.map((p) => (p.id === id ? { ...p, ...patch } : p)))
-  updateProductFs(id, patch).catch(console.warn)
+  if (firebaseEnabled) updateProductFs(id, patch).catch(console.warn)
+}
+
+export function addProduct(type = 'note'): string {
+  const id = `NOTE-${String(state.products.length + 1).padStart(3, '0')}`
+  const product: Product = {
+    id,
+    name: 'Untitled note item',
+    image: '',
+    category: type.trim() || 'note',
+    description: '',
+    price: 0,
+    volume: '',
+    symptoms: [],
+    effects: [],
+    ingredients: [],
+    nutrientIds: [],
+    memo: '',
+    createdAt: new Date(),
+  }
+  setState('products', (prev) => [product, ...prev])
+  if (firebaseEnabled) updateProductFs(id, product).catch(console.warn)
+  return id
 }
 
 export function updateNutrient(id: string, patch: Partial<Nutrient>): void {
   setState('nutrients', (prev) => prev.map((n) => (n.id === id ? { ...n, ...patch } : n)))
-  updateNutrientFs(id, patch).catch(console.warn)
+  if (firebaseEnabled) updateNutrientFs(id, patch).catch(console.warn)
+}
+
+export function addNutrient(): string {
+  const id = `TAG-${String(state.nutrients.length + 1).padStart(3, '0')}`
+  const nutrient: Nutrient = {
+    id,
+    name: 'Untitled tag',
+    description: '',
+    productIds: [],
+    memo: '',
+    createdAt: new Date(),
+  }
+  setState('nutrients', (prev) => [nutrient, ...prev])
+  if (firebaseEnabled) updateNutrientFs(id, nutrient).catch(console.warn)
+  return id
 }
 
 // ── Symptom CRUD ──────────────────────────────────────────────────────────────
@@ -235,6 +288,7 @@ export async function addMemo(data: Omit<Memo, 'id'>): Promise<string> {
   const tempId = 'local-' + Date.now()
   setState('memos', (prev) => [{ ...data, id: tempId }, ...prev])
   try {
+    if (!firebaseEnabled) return tempId
     const id = await addMemoFs(data)
     setState('memos', (prev) => prev.map((m) => (m.id === tempId ? { ...m, id } : m)))
     return id
@@ -245,12 +299,12 @@ export async function addMemo(data: Omit<Memo, 'id'>): Promise<string> {
 
 export function updateMemo(id: string, patch: Partial<Omit<Memo, 'id'>>): void {
   setState('memos', (prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)))
-  updateMemoFs(id, patch).catch(console.warn)
+  if (firebaseEnabled) updateMemoFs(id, patch).catch(console.warn)
 }
 
 export function deleteMemo(id: string): void {
   setState('memos', (prev) => prev.filter((m) => m.id !== id))
-  deleteMemoFs(id).catch(console.warn)
+  if (firebaseEnabled) deleteMemoFs(id).catch(console.warn)
 }
 
 // ── Blog CRUD ─────────────────────────────────────────────────────────────────
@@ -259,6 +313,7 @@ export async function addBlog(data: Omit<Blog, 'id'>): Promise<string> {
   const tempId = 'local-' + Date.now()
   setState('blogs', (prev) => [{ ...data, id: tempId }, ...prev])
   try {
+    if (!firebaseEnabled) return tempId
     const id = await addBlogFs(data)
     setState('blogs', (prev) => prev.map((b) => (b.id === tempId ? { ...b, id } : b)))
     return id
@@ -269,7 +324,7 @@ export async function addBlog(data: Omit<Blog, 'id'>): Promise<string> {
 
 export function updateBlog(id: string, patch: Partial<Omit<Blog, 'id'>>): void {
   setState('blogs', (prev) => prev.map((b) => (b.id === id ? { ...b, ...patch } : b)))
-  updateBlogFs(id, patch).catch(console.warn)
+  if (firebaseEnabled) updateBlogFs(id, patch).catch(console.warn)
 }
 
 export function trashBlog(id: string): void {
@@ -278,7 +333,7 @@ export function trashBlog(id: string): void {
   const deletedAt = new Date()
   setState('blogs', (prev) => prev.filter((b) => b.id !== id))
   setState('trashBlogs', (prev) => [{ ...blog, deletedAt }, ...prev])
-  updateBlogFs(id, { deletedAt }).catch(console.warn)
+  if (firebaseEnabled) updateBlogFs(id, { deletedAt }).catch(console.warn)
 }
 
 export function restoreBlog(id: string): void {
@@ -287,18 +342,18 @@ export function restoreBlog(id: string): void {
   const { deletedAt: _d, ...restored } = blog
   setState('trashBlogs', (prev) => prev.filter((b) => b.id !== id))
   setState('blogs', (prev) => [{ ...restored }, ...prev])
-  restoreBlogFs(id).catch(console.warn)
+  if (firebaseEnabled) restoreBlogFs(id).catch(console.warn)
 }
 
 export function deleteBlogPermanent(id: string): void {
   setState('trashBlogs', (prev) => prev.filter((b) => b.id !== id))
-  deleteBlogFs(id).catch(console.warn)
+  if (firebaseEnabled) deleteBlogFs(id).catch(console.warn)
 }
 
 export function emptyTrash(): void {
   const ids = state.trashBlogs.map((b) => b.id!)
   setState({ trashBlogs: [] })
-  Promise.all(ids.map(deleteBlogFs)).catch(console.warn)
+  if (firebaseEnabled) Promise.all(ids.map(deleteBlogFs)).catch(console.warn)
 }
 
 // ── Notebook CRUD ─────────────────────────────────────────────────────────────
@@ -307,6 +362,7 @@ export async function addNotebook(data: Omit<Notebook, 'id'>): Promise<string> {
   const tempId = 'local-' + Date.now()
   setState('notebooks', (prev) => [{ ...data, id: tempId }, ...prev])
   try {
+    if (!firebaseEnabled) return tempId
     const id = await addNotebookFs(data)
     setState('notebooks', (prev) => prev.map((n) => (n.id === tempId ? { ...n, id } : n)))
     return id
@@ -317,10 +373,10 @@ export async function addNotebook(data: Omit<Notebook, 'id'>): Promise<string> {
 
 export function updateNotebook(id: string, patch: Partial<Omit<Notebook, 'id'>>): void {
   setState('notebooks', (prev) => prev.map((n) => (n.id === id ? { ...n, ...patch } : n)))
-  updateNotebookFs(id, patch).catch(console.warn)
+  if (firebaseEnabled) updateNotebookFs(id, patch).catch(console.warn)
 }
 
 export async function deleteNotebook(id: string): Promise<void> {
-  await deleteNotebookFs(id)
+  if (firebaseEnabled) await deleteNotebookFs(id)
   setState('notebooks', (prev) => prev.filter((n) => n.id !== id))
 }

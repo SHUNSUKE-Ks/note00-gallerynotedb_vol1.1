@@ -412,7 +412,7 @@ const PageBlog: Component = () => {
                 }}
                 onClick={() => setTagPickerTab(tab)}
               >
-                {tab === 'product' ? '📦 商品' : '🌿 成分'}
+                {tab === 'product' ? 'Note' : 'Tag'}
               </button>
             ))}
           </div>
@@ -465,7 +465,7 @@ const PageBlog: Component = () => {
               <button onClick={() => setCoverPickerOpen(false)} class="text-[#999]">✕</button>
             </div>
             <div class="flex-1 overflow-y-auto p-4">
-              <p class="text-xs text-[#999] mb-3 font-semibold uppercase tracking-wider">商品画像</p>
+              <p class="text-xs text-[#999] mb-3 font-semibold uppercase tracking-wider">Cover Image</p>
               <div class="grid grid-cols-3 gap-2 mb-4">
                 <For each={PRODUCTS.filter((p) => p.image)}>
                   {(product) => (

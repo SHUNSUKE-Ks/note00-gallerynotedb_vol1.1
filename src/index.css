@@ -58,7 +58,7 @@ body {
 .mode-pill button.active { background: #fff; color: #37352f; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 
 /* ── Sidebar ── */
-#sidebar { transition: transform .22s ease; }
+#sidebar { transition: transform .22s ease, width .22s ease, border-color .22s ease; }
 #sidebarBackdrop {
   display: none;
   position: fixed; inset: 0; top: 3rem;   /* 3rem = h-12, scales with font */
@@ -66,6 +66,14 @@ body {
   z-index: 54;
 }
 /* .show is activated only inside the mobile media query below */
+
+@media screen and (min-width: 768px) and (min-height: 501px) {
+  #sidebar:not(.sidebar-open) {
+    width: 0 !important;
+    transform: translateX(-100%);
+    border-right-color: transparent;
+  }
+}
 
 /* ── Panels ── */
 #settingsPanel, #galleryPanel { transition: transform .25s ease; }

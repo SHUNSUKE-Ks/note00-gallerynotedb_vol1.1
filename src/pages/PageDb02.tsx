@@ -1,6 +1,6 @@
 import { type Component, createMemo, createSignal, For, Show } from 'solid-js'
 import type { Nutrient } from '../types'
-import { state, setState, updateNutrient } from '../store'
+import { state, setState, updateNutrient, addNutrient, updateDbTitle } from '../store'
 
 
 type Props = { nutrients: Nutrient[] }
@@ -123,7 +123,8 @@ const TableView: Component<{
                                 <input
                                   type="text"
                                   class="w-full text-xs font-semibold text-nacc-gold border-none outline-none bg-transparent"
-                                  value={nutrient.name.split(' ')[0]}
+                                  value={nutrient.name}
+                                  onInput={(e) => props.onUpdate(nutrient.id, { name: e.currentTarget.value })}
                                   onBlur={() => setActiveEdit(null)}
                                   ref={(el) => el && setTimeout(() => el.focus(), 0)}
                                 />
@@ -177,8 +178,11 @@ const TableView: Component<{
             }}
           </For>
 
-          <div class="flex items-center gap-2 px-4 py-2 text-xs text-gray-400 hover:bg-gray-50 cursor-pointer transition-colors border-t border-dashed border-nacc-border">
-            <span>+</span> 新しい栄養素を追加
+          <div
+            class="flex items-center gap-2 px-4 py-2 text-xs text-gray-400 hover:bg-gray-50 cursor-pointer transition-colors border-t border-dashed border-nacc-border"
+            onClick={() => addNutrient()}
+          >
+            <span>+</span> 新しいタグを追加
           </div>
         </div>
       </div>
@@ -227,7 +231,7 @@ const DetailView: Component<{ nutrients: Nutrient[] }> = (props) => {
         <div class="p-3 border-b border-nacc-border">
           <input
             type="search"
-            placeholder="成分を検索..."
+            placeholder="タグを検索..."
             class="w-full px-3 py-1.5 text-xs rounded-lg border border-nacc-border bg-white outline-none focus:border-nacc-gold"
             value={search()}
             onInput={(e) => setSearch(e.currentTarget.value)}
@@ -266,7 +270,7 @@ const DetailView: Component<{ nutrients: Nutrient[] }> = (props) => {
           fallback={
             <div class="flex flex-col items-center justify-center h-full text-[#ccc] gap-2">
               <span class="text-5xl">🧬</span>
-              <span class="text-sm">成分を選択してください</span>
+              <span class="text-sm">タグを選択してください</span>
             </div>
           }
         >
@@ -286,7 +290,7 @@ const DetailView: Component<{ nutrients: Nutrient[] }> = (props) => {
               </div>
 
               <div class="mb-5">
-                <h2 class="text-xs font-semibold text-[#999] uppercase tracking-wider mb-2">含まれる商品</h2>
+                <h2 class="text-xs font-semibold text-[#999] uppercase tracking-wider mb-2">リンクされたNote</h2>
                 <div class="flex flex-wrap gap-2">
                   <For each={state.products.filter((p) => p.nutrientIds.includes(nutrient().id))}>
                     {(p) => (
@@ -341,9 +345,16 @@ const PageDb02: Component<Props> = (props) => {
       {/* Page header */}
       <div class="px-6 pt-4 pb-3 bg-nacc-light flex items-start justify-between shrink-0">
         <div>
-          <h1 class="text-xl font-bold text-nacc-dark">DB02 — 栄養素一覧</h1>
+          <h1 class="text-xl font-bold text-nacc-dark">
+            DB02 —{' '}
+            <input
+              class="bg-transparent border-b border-transparent hover:border-nacc-border focus:border-nacc-gold outline-none max-w-64"
+              value={state.dbTitles.db02}
+              onInput={(e) => updateDbTitle('db02', e.currentTarget.value)}
+            />
+          </h1>
           <div class="text-xs text-gray-500 mt-0.5">
-            有効成分・栄養素データベース ·{' '}
+            タグ・参照用データベース ·{' '}
             <span class="font-medium">{props.nutrients.length}件</span>
           </div>
         </div>
@@ -354,7 +365,10 @@ const PageDb02: Component<Props> = (props) => {
           >
             ⚙ カラム設定
           </button>
-          <button class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-nacc-dark text-white rounded-lg hover:opacity-90 transition-opacity">
+          <button
+            class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-nacc-dark text-white rounded-lg hover:opacity-90 transition-opacity"
+            onClick={() => addNutrient()}
+          >
             + 新規追加
           </button>
         </div>

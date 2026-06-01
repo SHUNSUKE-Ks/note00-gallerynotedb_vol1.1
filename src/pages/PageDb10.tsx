@@ -247,16 +247,16 @@ const PageDb10: Component = () => {
                     </Show>
                   </div>
 
-                  {/* Related products */}
+                  {/* Related notes */}
                   <div>
                     <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-                      関連商品 <span class="normal-case font-normal text-gray-300">({relatedProducts().length}件)</span>
+                      関連Note <span class="normal-case font-normal text-gray-300">({relatedProducts().length}件)</span>
                     </h3>
                     <Show
                       when={relatedProducts().length > 0}
                       fallback={
                         <p class="text-xs text-gray-300 bg-white rounded-lg border border-nacc-border p-3">
-                          関連商品なし（商品DB01の症状欄に「{symptom().name}」を追加してください）
+                          関連Noteなし（DB01のStatus欄に「{symptom().name}」を追加してください）
                         </p>
                       }
                     >
@@ -264,7 +264,9 @@ const PageDb10: Component = () => {
                         <For each={relatedProducts()}>
                           {(p) => (
                             <div class="flex items-center gap-2 bg-white rounded-lg border border-nacc-border px-3 py-2">
-                              <span class="text-xs">{p.category === 'cosmetic' ? '🌸' : '💊'}</span>
+                              <span class="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-full px-2 py-0.5">
+                                {p.category || 'note'}
+                              </span>
                               <span class="text-xs text-nacc-dark font-medium leading-tight flex-1 min-w-0 truncate">
                                 {p.name}
                               </span>
